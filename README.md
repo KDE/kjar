@@ -1,0 +1,59 @@
+# kjar
+
+OpenJDK SDK as a runnable Flatpak with a Kirigami GUI. Run JAR files directly and generate wrapper scripts in `~/.local/bin`.
+
+## Build
+
+```
+flatpak remote-add --user flathub https://flathub.org/repo/flathub.flatpakrepo
+```
+```
+flatpak-builder --install --user --install-deps-from=flathub --force-clean build-dir .flatpak-manifest.json
+```
+
+## Use
+
+### GUI
+
+Launch the app to open JAR files interactively:
+
+```
+flatpak run org.kde.kjar
+```
+
+KJar is also registered as a handler for `.jar` files — you can open them directly from your file manager.
+
+### Run a JAR file directly
+
+```
+flatpak run org.kde.kjar /path/to/app.jar
+```
+
+Runs headlessly. If Java reports an error (e.g. missing main manifest attribute), the GUI opens automatically and displays it.
+
+### Generate wrappers (Advanced)
+
+Creates wrapper scripts in `~/.local/bin` for all JDK tools (`java`, `javac`, `jar`, etc.) so they can be used like a system JDK:
+
+```
+flatpak run org.kde.kjar --generate-wrappers
+```
+
+Or via the GUI: **Advanced → Generate Wrappers**.
+
+Existing non-kjar binaries are never overwritten. `~/.local/bin` must be in `PATH`.
+
+### List available tools
+
+Via the GUI: **Advanced → Show Available Tools**.
+
+### Run a JDK tool directly
+
+```
+flatpak run org.kde.kjar java -version
+flatpak run org.kde.kjar javac MyClass.java
+```
+
+## License
+
+GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
