@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 // SPDX-FileCopyrightText: 2026 Hadi Chokr <hadichokr@icloud.com>
 
-import QtQuick 6.8
-import QtQuick.Controls 6.8 as Controls
-import QtQuick.Layouts 6.8
-import org.kde.kirigami 2.20 as Kirigami
+import QtQuick
+import QtQuick.Controls as Controls
+import QtQuick.Layouts
+import org.kde.kirigami as Kirigami
 import Qt.labs.platform
 import QtCore
 

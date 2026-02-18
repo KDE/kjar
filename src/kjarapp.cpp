@@ -5,6 +5,7 @@
 #include <QDir>
 #include <QProcess>
 #include <QThread>
+#include <QCoreApplication>
 
 static const QString APP_ID = QStringLiteral("org.kde.kjar");
 
@@ -47,16 +48,16 @@ QStringList KjarApp::findAvailableTools() const
 
 bool KjarApp::runJarFile(const QString &file)
 {
-    // Use bundled java directly
-    const QString javaPath = QStringLiteral("/app/jdk/bin/java");
-    if (!QFile::exists(javaPath)) {
-        Q_EMIT errorOccurred(i18n("Bundled Java not found at %1. Try reinstalling kjar.", javaPath));
+    const QString watcherPath =
+    QCoreApplication::applicationDirPath() + QStringLiteral("/kjar_watcher");
+
+    if (!QFile::exists(watcherPath)) {
+        Q_EMIT errorOccurred(i18n("Watcher binary not found at %1", watcherPath));
         return false;
     }
 
-    // Start the JAR detached – it will outlive this process
-    if (!QProcess::startDetached(javaPath, { QStringLiteral("-jar"), file })) {
-        Q_EMIT errorOccurred(i18n("Failed to start Java process for %1.", file));
+    if (!QProcess::startDetached(watcherPath, { file })) {
+        Q_EMIT errorOccurred(i18n("Failed to launch watcher for %1", file));
         return false;
     }
 

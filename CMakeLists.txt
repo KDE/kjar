@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.28)
 project(KjarApp)
 
-set(QT_MIN_VERSION "6.8.0")
+set(QT_MIN_VERSION "6.9.0")
 set(KF_MIN_VERSION "6.12.0")
 
 find_package(ECM ${KF_MIN_VERSION} REQUIRED NO_MODULE)
@@ -29,6 +29,7 @@ find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS
     CoreAddons
     I18n
     Kirigami
+    Notifications
 )
 
 qt6_add_resources(kjarapp_RESOURCES resources.qrc)
@@ -41,6 +42,21 @@ set(SOURCES
 
 add_executable(kjarapp ${SOURCES})
 
+qt6_add_resources(kjar_watcher_RESOURCES
+    src/watcher/watcher.qrc
+)
+
+set(SOURCES
+    src/main.cpp
+    src/kjarapp.cpp
+    ${kjarapp_RESOURCES}
+)
+
+add_executable(kjar_watcher
+    src/watcher/kjar_watcher.cpp
+    ${kjar_watcher_RESOURCES}
+)
+
 target_link_libraries(kjarapp
     Qt6::Core
     Qt6::Qml
@@ -52,4 +68,15 @@ target_link_libraries(kjarapp
     KF6::Kirigami
 )
 
-install(TARGETS kjarapp ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+target_link_libraries(kjar_watcher
+    Qt6::Core
+    Qt6::Qml
+    Qt6::Quick
+    Qt6::QuickControls2
+    Qt6::Widgets
+    KF6::Kirigami
+    KF6::I18n
+)
+
+install(TARGETS kjarapp kjar_watcher ${KDE_INSTALL_TARGETS_DEFAULT_ARGS})
+

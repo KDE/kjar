@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
         // --generate-wrappers / -g: headless, CLI output only
         if (arg == QLatin1String("--generate-wrappers") || arg == QLatin1String("-g")) {
             QCoreApplication coreApp(argc, argv);
-            KLocalizedString::setApplicationDomain("kjar");
+            KLocalizedString::setApplicationDomain("org.kde.kjar");
             KjarApp kjarApp;
             QEventLoop loop;
             QObject::connect(&kjarApp, &KjarApp::operationCompleted, [&](const QString &msg) {
@@ -74,7 +74,9 @@ int main(int argc, char *argv[])
 
             // We need a QGuiApplication because we might show the GUI on error
             QGuiApplication app(argc, argv);
-            KLocalizedString::setApplicationDomain("kjar");
+            app.setApplicationName(QStringLiteral("org.kde.kjar"));
+            app.setDesktopFileName(QStringLiteral("org.kde.kjar"));
+            KLocalizedString::setApplicationDomain("org.kde.kjar");
 
             KjarApp kjarApp;
             QString errorMessage;
@@ -99,7 +101,9 @@ int main(int argc, char *argv[])
 
     // GUI path (no JAR argument, or argument wasn't a valid .jar)
     QGuiApplication app(argc, argv);
-    KLocalizedString::setApplicationDomain("kjar");
+    app.setApplicationName(QStringLiteral("org.kde.kjar"));
+    app.setDesktopFileName(QStringLiteral("org.kde.kjar"));
+    KLocalizedString::setApplicationDomain("org.kde.kjar");
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
