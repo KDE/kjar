@@ -44,13 +44,13 @@ int main(int argc, char *argv[])
     java.waitForFinished(-1);
 
     int exitCode = java.exitCode();
+    QString errorText = QString::fromLocal8Bit(stderrBuffer).trimmed();
 
-    if (exitCode == 0)
+    if (exitCode == 0 && errorText.isEmpty())
         return 0;
 
-    QString errorText = QString::fromLocal8Bit(stderrBuffer).trimmed();
     if (errorText.isEmpty())
-        errorText = QStringLiteral("Java exited with an error.");
+        errorText = i18n("Java exited with an error (exit code %1).", QString::number(exitCode));
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextProperty(QStringLiteral("errorMessage"), errorText);
@@ -65,4 +65,3 @@ int main(int argc, char *argv[])
 
     return app.exec();
 }
-
