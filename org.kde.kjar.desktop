@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Run Java Archives
+Name=Java Archive Runner
 Comment=Run JAR files
 Exec=kjarapp %f
 Icon=application-x-java-archive
