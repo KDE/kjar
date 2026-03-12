@@ -2,16 +2,15 @@
 <component type="addon">
     <id>org.kde.kjar</id>
     <name>kjar</name>
-    <summary>Flatpak-based OpenJDK wrapper runtime</summary>
+    <summary>Kirigami launcher for JAR files with a bundled Flatpak-OpenJDK</summary>
 
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL</project_license>
 
     <description>
         <p>
-            kjar provides an OpenJDK runtime via Flatpak and generates
-            wrapper scripts so Java tools can be used like a normal
-            system JDK.
+            kjar provides an OpenJDK runtime via Flatpak with a Kirigami GUI for desktop use
+            and can generate wrapper scripts so JDK tools can be used like a normal system JDK.
         </p>
     </description>
 

@@ -12,11 +12,11 @@
 
 int main(int argc, char *argv[])
 {
-    // Handle pure CLI cases before initializing any GUI stack
+    // Handle pure CLI cases before initializing any GUI
     if (argc > 1) {
         const QString arg = QString::fromLocal8Bit(argv[1]);
 
-        // Direct tool invocation: only tools available in /app/bin or /app/jdk/bin
+        // Direct tool invocation: only /app/bin and /app/jdk/bin are searched
         if (!arg.startsWith(QLatin1Char('-')) &&
             !arg.endsWith(QLatin1String(".jar"), Qt::CaseInsensitive))
         {
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
             return proc.exitCode();
         }
 
-        // --generate-wrappers / -g: headless, CLI output only
+        // --generate-wrappers/-g: CLI call, assume script/TTY context
         if (arg == QLatin1String("--generate-wrappers") || arg == QLatin1String("-g")) {
             QCoreApplication coreApp(argc, argv);
             KLocalizedString::setApplicationDomain("org.kde.kjar");
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
             });
             QObject::connect(&kjarApp, &KjarApp::errorOccurred, [&](const QString &err) {
                 fprintf(stderr, "%s\n", err.toLocal8Bit().constData());
-                // don't quit — more errors may follow per-tool, operationCompleted ends it
+                // don't quit as more errors may follow per-tool, operationCompleted ends it
             });
             kjarApp.generateWrappers();
             loop.exec();
@@ -86,9 +86,9 @@ int main(int argc, char *argv[])
 
             bool started = kjarApp.runJarFile(filePath);
             if (started) {
-                return 0;   // JAR launched successfully – we're done
+                return 0;   // JAR launched successfully
             } else {
-                // Starting failed – show the GUI with the error
+                // Starting failed so show the GUI with the error
                 QQmlApplicationEngine engine;
                 engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
                 engine.rootContext()->setContextProperty(QStringLiteral("backend"), &kjarApp);
@@ -99,7 +99,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    // GUI path (no JAR argument, or argument wasn't a valid .jar)
+    // GUI path, no valid JAR or tool argument
     QGuiApplication app(argc, argv);
     app.setApplicationName(QStringLiteral("org.kde.kjar"));
     app.setDesktopFileName(QStringLiteral("org.kde.kjar"));

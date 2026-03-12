@@ -1,6 +1,6 @@
 [Desktop Entry]
-Name=Java Archive (kjar)
-Comment=Run JAR files using kjar
+Name=Run Java Archives
+Comment=Run JAR files
 Exec=kjarapp %f
 Icon=application-x-java-archive
 Terminal=false
