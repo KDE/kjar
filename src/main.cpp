@@ -10,6 +10,18 @@
 #include <QProcess>
 #include "kjarapp.h"
 
+static int showGui(KjarApp &kjarApp, const QString &initialError = QString()) {
+  QQmlApplicationEngine engine;
+  engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
+  engine.rootContext()->setContextProperty(QStringLiteral("backend"), &kjarApp);
+  if (!initialError.isEmpty()) {
+    engine.rootContext()->setContextProperty(QStringLiteral("initialError"),
+                                             initialError);
+  }
+  engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
+  return qApp->exec();
+}
+
 int main(int argc, char *argv[])
 {
     // Handle pure CLI cases before initializing any GUI
@@ -18,33 +30,33 @@ int main(int argc, char *argv[])
 
         // Direct tool invocation: only /app/bin and /app/jdk/bin are searched
         if (!arg.startsWith(QLatin1Char('-')) &&
-            !arg.endsWith(QLatin1String(".jar"), Qt::CaseInsensitive))
-        {
-            // Find tool in sandbox paths
-            const QStringList allowedPaths = { QStringLiteral("/app/bin"), QStringLiteral("/app/jdk/bin") };
-            QString toolPath;
-            for (const QString &path : allowedPaths) {
-                const QString candidate = path + QLatin1Char('/') + arg;
-                if (QFile::exists(candidate)) {
-                    toolPath = candidate;
-                    break;
-                }
+            !arg.endsWith(QLatin1String(".jar"), Qt::CaseInsensitive)) {
+          const QStringList allowedPaths = {QStringLiteral("/app/bin"),
+                                            QStringLiteral("/app/jdk/bin")};
+          QString toolPath;
+          for (const QString &path : allowedPaths) {
+            const QString candidate = path + QLatin1Char('/') + arg;
+            if (QFile::exists(candidate)) {
+              toolPath = candidate;
+              break;
             }
+          }
 
-            if (toolPath.isEmpty()) {
-                fprintf(stderr, "kjar: '%s' is not an available JDK tool.\n", argv[1]);
-                return 1;
-            }
+          if (toolPath.isEmpty()) {
+            fprintf(stderr, "kjar: '%s' is not an available JDK tool.\n",
+                    argv[1]);
+            return 1;
+          }
 
-            QStringList procArgs;
-            for (int i = 2; i < argc; ++i)
-                procArgs << QString::fromLocal8Bit(argv[i]);
+          QStringList procArgs;
+          for (int i = 2; i < argc; ++i)
+            procArgs << QString::fromLocal8Bit(argv[i]);
 
-            QProcess proc;
-            proc.setProcessChannelMode(QProcess::ForwardedChannels);
-            proc.start(toolPath, procArgs);
-            proc.waitForFinished(-1);
-            return proc.exitCode();
+          QProcess proc;
+          proc.setProcessChannelMode(QProcess::ForwardedChannels);
+          proc.start(toolPath, procArgs);
+          proc.waitForFinished(-1);
+          return proc.exitCode();
         }
 
         // --generate-wrappers/-g: CLI call, assume script/TTY context
@@ -66,36 +78,38 @@ int main(int argc, char *argv[])
             return 0;
         }
 
-        // If the argument is a .jar file, attempt to run it detached
-        if (arg.endsWith(QLatin1String(".jar"), Qt::CaseInsensitive) && QFile::exists(arg)) {
-            QString filePath = arg;
-            if (filePath.startsWith(QLatin1String("file://")))
-                filePath.remove(0, 7);
+        // JAR file argument
+        if (arg.endsWith(QLatin1String(".jar"), Qt::CaseInsensitive)) {
+          QString filePath = arg;
+          if (filePath.startsWith(QLatin1String("file://")))
+            filePath.remove(0, 7);
 
-            // We need a QGuiApplication because we might show the GUI on error
-            QGuiApplication app(argc, argv);
-            app.setApplicationName(QStringLiteral("org.kde.kjar"));
-            app.setDesktopFileName(QStringLiteral("org.kde.kjar"));
-            KLocalizedString::setApplicationDomain("org.kde.kjar");
+          QGuiApplication app(argc, argv);
+          app.setApplicationName(QStringLiteral("org.kde.kjar"));
+          app.setDesktopFileName(QStringLiteral("org.kde.kjar"));
+          KLocalizedString::setApplicationDomain("org.kde.kjar");
 
-            KjarApp kjarApp;
-            QString errorMessage;
-            QObject::connect(&kjarApp, &KjarApp::errorOccurred, [&](const QString &err) {
-                errorMessage = err;
-            });
+          KjarApp kjarApp;
 
-            bool started = kjarApp.runJarFile(filePath);
-            if (started) {
-                return 0;   // JAR launched successfully
-            } else {
-                // Starting failed so show the GUI with the error
-                QQmlApplicationEngine engine;
-                engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
-                engine.rootContext()->setContextProperty(QStringLiteral("backend"), &kjarApp);
-                engine.rootContext()->setContextProperty(QStringLiteral("initialError"), errorMessage);
-                engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
-                return app.exec();
-            }
+          // File is outside the sandbox or does not exist
+          if (!QFile::exists(filePath)) {
+            const QString error = i18n(
+                "File does not exist or cannot be accessed.\n"
+                "KJar can only see your Home directory by default.\n"
+                "If the file exists elsewhere, move it to your Home directory "
+                "or expand KJar's permissions in System Settings.");
+            return showGui(kjarApp, error);
+          }
+
+          QString errorMessage;
+          QObject::connect(&kjarApp, &KjarApp::errorOccurred,
+                           [&](const QString &err) { errorMessage = err; });
+
+          if (kjarApp.runJarFile(filePath))
+            return 0; // JAR launched successfully
+
+          // JAR failed to launch, show the error
+          return showGui(kjarApp, errorMessage);
         }
     }
 
@@ -105,13 +119,6 @@ int main(int argc, char *argv[])
     app.setDesktopFileName(QStringLiteral("org.kde.kjar"));
     KLocalizedString::setApplicationDomain("org.kde.kjar");
 
-    QQmlApplicationEngine engine;
-    engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
-
     KjarApp kjarApp;
-    engine.rootContext()->setContextProperty(QStringLiteral("backend"), &kjarApp);
-
-    engine.rootContext()->setContextProperty(QStringLiteral("initialError"), QString());
-    engine.load(QUrl(QStringLiteral("qrc:/qml/main.qml")));
-    return app.exec();
+    return showGui(kjarApp);
 }
