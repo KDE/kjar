@@ -1,6 +1,6 @@
 # kjar
 
-**K**ool **J**ava **A**rchive **R**unner — pronounced *K-jarrrrgh* (like a dinosaur pirate).
+**K**ool **J**ava **A**rchive **R**unner (pronounced *K-jarrrrgh*, like a dragon pirate >:D).
 
 Run JAR files directly via a bundled OpenJDK Flatpak with a Kirigami GUI.
 And optionaly generate wrapper scripts for developers who get tired of typing out `flatpak run` commands.
