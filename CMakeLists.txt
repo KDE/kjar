@@ -34,7 +34,6 @@ find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS
     Notifications
 )
 
-# Main application
 qt6_add_resources(kjarapp_RESOURCES src/resources.qrc)
 
 set(kjarapp_SRCS
@@ -45,7 +44,6 @@ set(kjarapp_SRCS
 
 add_executable(kjarapp ${kjarapp_SRCS})
 
-# Watcher
 qt6_add_resources(kjar_watcher_RESOURCES src/watcher/watcher.qrc)
 
 set(kjar_watcher_SRCS

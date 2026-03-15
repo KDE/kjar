@@ -19,8 +19,12 @@ public:
 
     Q_INVOKABLE bool runJarFile(const QString &file);
     Q_INVOKABLE void generateWrappers();
+    Q_INVOKABLE void openModulesFolder();
+
     QStringList availableTools() const;
     bool busy() const { return m_busy; }
+
+    static QString defaultModulesDir();
 
 Q_SIGNALS:
     void toolsChanged();
@@ -31,6 +35,8 @@ Q_SIGNALS:
 private:
     QStringList findAvailableTools() const;
     void setBusy(bool busy);
+    QStringList buildJvmArgs(const QString &jarPath) const;
+
     QString m_targetDir;
     bool m_busy = false;
 };

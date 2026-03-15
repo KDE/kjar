@@ -10,7 +10,7 @@ Kirigami.ApplicationWindow {
     id: root
     visible: true
     width: 640
-    height: 480
+    height: 560
     title: i18n("Java Application Error")
 
     pageStack.initialPage: Kirigami.Page {
@@ -65,6 +65,13 @@ Kirigami.ApplicationWindow {
                         radius: 3
                     }
                 }
+            }
+
+            Kirigami.InlineMessage {
+                Layout.fillWidth: true
+                visible: true
+                type: Kirigami.MessageType.Information
+                text: i18n("If this application requires external modules or libraries, place them in <b>~/.local/share/kjar/modules/</b> and try again.")
             }
 
             Button {

@@ -25,7 +25,6 @@ Kirigami.ApplicationWindow {
         }
     }
 
-    // Tools dialog
     Kirigami.Dialog {
         id: toolsDialog
         title: i18n("Available JDK Tools")
@@ -81,6 +80,11 @@ Kirigami.ApplicationWindow {
                         icon.name: "archive-insert"
                         enabled: backend ? !backend.busy : false
                         onTriggered: backend.generateWrappers()
+                    },
+                    Kirigami.Action {
+                        text: i18n("Open Modules Folder")
+                        icon.name: "folder"
+                        onTriggered: backend.openModulesFolder()
                     }
                 ]
             }

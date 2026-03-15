@@ -3,7 +3,6 @@
 
 <RCC version="1.0">
     <qresource prefix="/watcher">
-        <file>ErrorDialog.qml</file>
+        <file alias="ErrorDialog.qml">../qml/ErrorDialog.qml</file>
     </qresource>
 </RCC>
-
