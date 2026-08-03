@@ -9,7 +9,16 @@
 #include <QFile>
 #include <QDir>
 #include <QProcess>
+#include <QUrl>
 #include "kjarapp.h"
+
+static QString toLocalPath(const QString &input)
+{
+  if (input.startsWith(QLatin1String("file://"))) {
+    return QUrl(input).toLocalFile();
+  }
+  return input;
+}
 
 static int showGui(KjarApp &kjarApp, const QString &initialError = QString()) {
   QQmlApplicationEngine engine;
@@ -121,10 +130,7 @@ int main(int argc, char *argv[])
       }
 
       if (arg.endsWith(QLatin1String(".jar"), Qt::CaseInsensitive)) {
-        QString filePath = arg;
-        if (filePath.startsWith(QLatin1String("file://"))) {
-          filePath.remove(0, 7);
-        }
+        const QString filePath = toLocalPath(arg);
 
         QGuiApplication app(argc, argv);
         app.setApplicationName(QStringLiteral("org.kde.kjar"));

@@ -7,6 +7,7 @@
 #include <QQmlContext>
 #include <QProcess>
 #include <QFile>
+#include <QUrl>
 #include <KLocalizedString>
 
 int main(int argc, char *argv[])
@@ -17,7 +18,7 @@ int main(int argc, char *argv[])
 
     QString jarPath = QString::fromLocal8Bit(argv[1]);
     if (jarPath.startsWith(QStringLiteral("file://"))) {
-        jarPath.remove(0, 7);
+        jarPath = QUrl(jarPath).toLocalFile();
     }
 
     if (!QFile::exists(jarPath)) {
