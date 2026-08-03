@@ -26,7 +26,15 @@
       "name": "openjdk",
       "buildsystem": "simple",
       "build-commands": [
-        "/usr/lib/sdk/openjdk25/installjdk.sh"
+        "/usr/lib/sdk/openjdk25/installjdk.sh",
+        "rm -f /app/jdk/lib/src.zip",
+        "sh strip-jmods.sh"
+      ],
+      "sources": [
+        {
+          "type": "file",
+          "path": "strip-jmods.sh"
+        }
       ]
     },
     {
