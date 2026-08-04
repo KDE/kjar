@@ -1,35 +1,53 @@
 // SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 // SPDX-FileCopyrightText: 2026 Hadi Chokr <hadichokr@icloud.com>
 
+import QtCore
 import QtQuick
 import QtQuick.Controls as Controls
+import QtQuick.Dialogs
 import QtQuick.Layouts
+import org.kde.coreaddons as KCoreAddons
 import org.kde.kirigami as Kirigami
-import Qt.labs.platform
-import QtCore
+import org.kde.kjar
 
 Kirigami.ApplicationWindow {
     id: root
-    width: 460
-    height: 340
-    minimumWidth: 380
-    minimumHeight: 280
+
+    required property string initialError
+
+    width: 520
+    height: 410
+    minimumWidth: 480
+    minimumHeight: 380
     visible: true
-    title: i18n("KJar")
+    title: i18n("Java Archive Runner")
+
+    function showStatus(ok: bool, text: string): void {
+        statusMessage.type = ok ? Kirigami.MessageType.Positive : Kirigami.MessageType.Error;
+        statusMessage.text = text;
+        statusMessage.visible = true;
+    }
 
     Component.onCompleted: {
-        if (typeof initialError !== "undefined" && initialError !== "") {
-            statusMessage.type = Kirigami.MessageType.Error
-            statusMessage.text = initialError
-            statusMessage.visible = true
+        if (root.initialError !== "") {
+            root.showStatus(false, root.initialError);
+        }
+    }
+
+    Component {
+        id: aboutPage
+
+        Kirigami.AboutPage {
+            aboutData: KCoreAddons.AboutData
         }
     }
 
     Kirigami.Dialog {
         id: toolsDialog
+
         title: i18n("Available JDK Tools")
-        preferredWidth: 420
-        preferredHeight: 360
+        preferredWidth: 500
+        preferredHeight: 390
 
         Controls.ScrollView {
             clip: true
@@ -40,12 +58,14 @@ Kirigami.ApplicationWindow {
                 padding: Kirigami.Units.largeSpacing
 
                 Repeater {
-                    model: backend ? backend.availableTools : []
+                    model: KjarApp.availableTools
+
                     delegate: Controls.Label {
+                        required property string modelData
+
                         text: modelData
                         font.family: "monospace"
-                        font.pixelSize: 11
-                        padding: 4
+                        padding: Kirigami.Units.smallSpacing
                         background: Rectangle {
                             color: Kirigami.Theme.alternateBackgroundColor
                             radius: 3
@@ -57,36 +77,53 @@ Kirigami.ApplicationWindow {
     }
 
     pageStack.initialPage: Kirigami.Page {
-        title: i18n("KJar – Java Archive Runner")
+        title: i18n("Java Archive Runner")
 
         actions: [
             Kirigami.Action {
                 icon.name: "application-x-java-archive"
                 text: i18n("Run JAR")
-                onTriggered: fileDialog.open()
                 displayHint: Kirigami.DisplayHint.KeepVisible
+                onTriggered: fileDialog.open()
             },
             Kirigami.Action {
                 icon.name: "configure"
                 text: i18n("Advanced")
-                children: [
-                    Kirigami.Action {
-                        text: i18n("Show Available Tools")
-                        icon.name: "utilities-terminal"
-                        onTriggered: toolsDialog.open()
-                    },
-                    Kirigami.Action {
-                        text: i18n("Generate Wrappers")
-                        icon.name: "archive-insert"
-                        enabled: backend ? !backend.busy : false
-                        onTriggered: backend.generateWrappers()
-                    },
-                    Kirigami.Action {
-                        text: i18n("Open Modules Folder")
-                        icon.name: "folder"
-                        onTriggered: backend.openModulesFolder()
+
+                Kirigami.Action {
+                    text: i18n("Show Available Tools")
+                    icon.name: "utilities-terminal"
+                    onTriggered: toolsDialog.open()
+                }
+
+                Kirigami.Action {
+                    text: i18n("Generate Wrappers")
+                    icon.name: "archive-insert"
+                    onTriggered: {
+                        const result = KjarApp.generateWrappers();
+                        root.showStatus(result.ok, result.message);
                     }
-                ]
+                }
+
+                Kirigami.Action {
+                    text: i18n("Remove Wrappers")
+                    icon.name: "edit-delete"
+                    onTriggered: {
+                        const result = KjarApp.removeWrappers();
+                        root.showStatus(result.ok, result.message);
+                    }
+                }
+
+                Kirigami.Action {
+                    text: i18n("Open Modules Folder")
+                    icon.name: "folder"
+                    onTriggered: KjarApp.openModulesFolder()
+                }
+            },
+            Kirigami.Action {
+                icon.name: "help-about"
+                text: i18n("About")
+                onTriggered: root.pageStack.layers.push(aboutPage)
             }
         ]
 
@@ -97,18 +134,15 @@ Kirigami.ApplicationWindow {
 
             Kirigami.InlineMessage {
                 id: statusMessage
+
                 Layout.fillWidth: true
                 visible: false
                 showCloseButton: true
             }
 
-            Controls.BusyIndicator {
-                Layout.alignment: Qt.AlignHCenter
-                running: backend ? backend.busy : false
-                visible: backend ? backend.busy : false
+            Item {
+                Layout.fillHeight: true
             }
-
-            Item { Layout.fillHeight: true }
 
             Kirigami.Icon {
                 source: "application-x-java-archive"
@@ -125,7 +159,7 @@ Kirigami.ApplicationWindow {
             }
 
             Controls.Label {
-                text: i18n("Select a Java Archive (.jar) file to execute it using the bundled OpenJDK runtime.")
+                text: i18n("Select a Java archive (.jar) to run it with the bundled OpenJDK runtime.")
                 wrapMode: Text.WordWrap
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
@@ -139,33 +173,24 @@ Kirigami.ApplicationWindow {
                 onClicked: fileDialog.open()
             }
 
-            Item { Layout.fillHeight: true }
+            Item {
+                Layout.fillHeight: true
+            }
         }
     }
 
     FileDialog {
         id: fileDialog
+
         title: i18n("Select JAR File")
-        nameFilters: ["JAR files (*.jar)"]
-        folder: StandardPaths.writableLocation(StandardPaths.DownloadLocation)
+        nameFilters: [i18n("Java archives (*.jar)")]
+        currentFolder: StandardPaths.writableLocation(StandardPaths.DownloadLocation)
 
         onAccepted: {
-            let filePath = file.toString().replace("file://", "")
-            backend.runJarFile(filePath)
-        }
-    }
-
-    Connections {
-        target: backend
-        function onErrorOccurred(error) {
-            statusMessage.type = Kirigami.MessageType.Error
-            statusMessage.text = error
-            statusMessage.visible = true
-        }
-        function onOperationCompleted(message) {
-            statusMessage.type = Kirigami.MessageType.Positive
-            statusMessage.text = message
-            statusMessage.visible = true
+            const error = KjarApp.runJar(selectedFile);
+            if (error !== "") {
+                root.showStatus(false, error);
+            }
         }
     }
 }

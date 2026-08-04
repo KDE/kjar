@@ -1,22 +1,53 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<component type="addon">
+<!-- SPDX-License-Identifier: CC0-1.0 -->
+<!-- SPDX-FileCopyrightText: none -->
+<component type="desktop-application">
     <id>org.kde.kjar</id>
-    <name>kjar</name>
-    <summary>Kirigami launcher for JAR files with a bundled Flatpak-OpenJDK</summary>
+    <name>Java Archive Runner</name>
+    <summary>Run JAR files with a bundled OpenJDK</summary>
 
     <metadata_license>CC0-1.0</metadata_license>
     <project_license>GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL</project_license>
+    <project_group>KDE</project_group>
+
+    <launchable type="desktop-id">org.kde.kjar.desktop</launchable>
+
+    <translation type="gettext">org.kde.kjar</translation>
+
+    <provides>
+        <binary>kjarapp</binary>
+    </provides>
+
+    <developer id="org.kde">
+        <name>KDE Community</name>
+    </developer>
 
     <description>
         <p>
-            kjar provides an OpenJDK runtime via Flatpak with a Kirigami GUI for desktop use
-            and can generate wrapper scripts so JDK tools can be used like a normal system JDK.
+            kjar runs Java archives using a bundled OpenJDK runtime, with a Kirigami
+            interface for opening JARs and inspecting failures. JavaFX is included, and
+            additional modules can be dropped into a user directory.
+        </p>
+        <p>
+            It can also generate wrapper scripts so the bundled JDK tools behave like a
+            system JDK on the command line.
+        </p>
+        <p>
+            Please note: kjar bundles a Java runtime, but it does not sandbox the
+            programs it runs. A JAR launched through kjar has read and write access to
+            your Home folder and access to the network, exactly as it would under a
+            system-wide Java installation. Only run JAR files you trust.
         </p>
     </description>
 
-    <provides>
-        <binary>java</binary>
-        <binary>javac</binary>
-        <binary>jar</binary>
-    </provides>
+    <content_rating type="oars-1.1"/>
+
+    <url type="homepage">https://invent.kde.org/system/kjar</url>
+    <url type="bugtracker">https://invent.kde.org/system/kjar/-/issues</url>
+    <url type="vcs-browser">https://invent.kde.org/system/kjar</url>
+    <url type="contribute">https://invent.kde.org/system/kjar/-/blob/master/README.md</url>
+
+    <releases>
+        <release version="0.3.0" date="2026-08-04"/>
+    </releases>
 </component>

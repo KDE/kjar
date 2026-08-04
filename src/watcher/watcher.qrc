@@ -1,8 +1,0 @@
-<!-- SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL -->
-<!-- SPDX-FileCopyrightText: 2026 Hadi Chokr <hadichokr@icloud.com> -->
-
-<RCC version="1.0">
-    <qresource prefix="/watcher">
-        <file alias="ErrorDialog.qml">../qml/ErrorDialog.qml</file>
-    </qresource>
-</RCC>

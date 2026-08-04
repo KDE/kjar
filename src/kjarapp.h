@@ -5,40 +5,38 @@
 #define KJARAPP_H
 
 #include <QObject>
+#include <QQmlEngine>
 #include <QStringList>
-#include <KLocalizedString>
+#include <QVariantMap>
 
+class QUrl;
+
+/**
+ * Backend exposed to QML as a singleton. Every operation is synchronous because I suck at async C++.
+ */
 class KjarApp : public QObject
 {
     Q_OBJECT
-    Q_PROPERTY(QStringList availableTools READ availableTools NOTIFY toolsChanged)
-    Q_PROPERTY(bool busy READ busy NOTIFY busyChanged)
+    QML_ELEMENT
+    QML_SINGLETON
+
+    Q_PROPERTY(QStringList availableTools READ availableTools CONSTANT)
 
 public:
     explicit KjarApp(QObject *parent = nullptr);
 
-    Q_INVOKABLE bool runJarFile(const QString &file);
-    Q_INVOKABLE void generateWrappers();
-    Q_INVOKABLE void openModulesFolder();
-
     QStringList availableTools() const;
-    bool busy() const { return m_busy; }
 
-    static QString defaultModulesDir();
+    /** Launches the JAR in a detached watcher process. Returns an error message, or an empty string on success. */
+    Q_INVOKABLE QString runJar(const QUrl &url);
 
-Q_SIGNALS:
-    void toolsChanged();
-    void busyChanged();
-    void operationCompleted(const QString &message);
-    void errorOccurred(const QString &error);
+    /** Returns {"ok": bool, "message": QString}. */
+    Q_INVOKABLE QVariantMap generateWrappers();
 
-private:
-    QStringList findAvailableTools() const;
-    void setBusy(bool busy);
-    QStringList buildJvmArgs(const QString &jarPath) const;
+    /** Deletes the wrappers we wrote, leaving everything else alone. Same return shape. */
+    Q_INVOKABLE QVariantMap removeWrappers();
 
-    QString m_targetDir;
-    bool m_busy = false;
+    Q_INVOKABLE void openModulesFolder();
 };
 
-#endif
+#endif // KJARAPP_H

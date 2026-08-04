@@ -2,12 +2,15 @@
 // SPDX-FileCopyrightText: 2026 Hadi Chokr <hadichokr@icloud.com>
 
 import QtQuick
-import QtQuick.Controls
+import QtQuick.Controls as Controls
 import QtQuick.Layouts
 import org.kde.kirigami as Kirigami
 
 Kirigami.ApplicationWindow {
     id: root
+
+    required property string errorMessage
+
     visible: true
     width: 640
     height: 560
@@ -46,18 +49,17 @@ Kirigami.ApplicationWindow {
                 Layout.fillWidth: true
             }
 
-            ScrollView {
+            Controls.ScrollView {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 Kirigami.Theme.inherit: false
                 Kirigami.Theme.colorSet: Kirigami.Theme.View
 
-                TextArea {
-                    text: errorMessage
+                Controls.TextArea {
+                    text: root.errorMessage
                     readOnly: true
                     wrapMode: Text.WrapAnywhere
                     font.family: "monospace"
-                    selectByMouse: true
                     background: Rectangle {
                         color: Kirigami.Theme.backgroundColor
                         border.color: Kirigami.Theme.disabledTextColor
@@ -74,7 +76,7 @@ Kirigami.ApplicationWindow {
                 text: i18n("If this application requires external modules or libraries, place them in <b>~/.local/share/kjar/modules/</b> and try again.")
             }
 
-            Button {
+            Controls.Button {
                 Layout.alignment: Qt.AlignHCenter
                 text: i18n("Close")
                 icon.name: "dialog-close"

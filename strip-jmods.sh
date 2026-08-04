@@ -5,11 +5,15 @@
 # Discard native debug symbols from /app/jdk/jmods.
 #
 
-set -e
+set -eu
 
 JDK=/app/jdk
 JMOD="$JDK/bin/jmod"
 MODULES="${1:-java.base}"
+
+mb() {
+    awk -v kb="$1" 'BEGIN { printf "%.1f", kb / 1024 }'
+}
 
 command -v objcopy >/dev/null || { echo "strip-jmods: objcopy not found"; exit 1; }
 [ -d "$JDK/jmods" ] || { echo "strip-jmods: $JDK/jmods missing"; exit 1; }
@@ -21,6 +25,7 @@ trap 'rm -rf "$WORK"' EXIT
 before=$(du -sk "$JDK/jmods" | cut -f1)
 touched_non_base=0
 
+# shellcheck disable=SC2086
 for name in $MODULES; do
     jm="$JDK/jmods/$name.jmod"
     if [ ! -f "$jm" ]; then
@@ -64,21 +69,22 @@ for name in $MODULES; do
         exit 1
     fi
 
-    printf 'strip-jmods:   %-22s %5s MB -> %5s MB\n' "$name" \
-        "$((kb / 1024))" "$(( $(du -k "$jm" | cut -f1) / 1024 ))"
+    printf 'strip-jmods:   %-22s %7s MB -> %7s MB\n' "$name" \
+        "$(mb "$kb")" "$(mb "$(du -k "$jm" | cut -f1)")"
 done
 
+# Only reachable when the caller passed non-base modules.
 if [ "$touched_non_base" -eq 1 ]; then
     echo "strip-jmods: recomputing recorded module hashes"
     if ! "$JMOD" hash --module-path "$JDK/jmods" --hash-modules '.*'; then
-        echo "strip-jmods: ERROR: jmod hash failed -- see the note at the top"
-        echo "strip-jmods:        of this script; rerun with java.base only."
+        echo "strip-jmods: ERROR: jmod hash failed; rerun with java.base only,"
+        echo "strip-jmods:        which no other module records a hash of."
         exit 1
     fi
 fi
 
 after=$(du -sk "$JDK/jmods" | cut -f1)
-echo "strip-jmods: total $((before / 1024)) MB -> $((after / 1024)) MB"
+echo "strip-jmods: total $(mb "$before") MB -> $(mb "$after") MB"
 
 # Smoke test
 echo "strip-jmods: verifying jlink against the rewritten jmods"
